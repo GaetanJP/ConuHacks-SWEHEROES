@@ -1,61 +1,57 @@
-import parser_script
 import pygame
 from pygame.locals import *
 from OpenGL.GL import *
 from OpenGL.GLUT import *
-from datetime import datetime
+from OpenGL.GLU import *
 import json
+from datetime import datetime
 
+def load_data(json_file):
+    with open(json_file, "r") as file:
+        return json.load(file)
 
-def parse_data(data, symbol, exchange):
-    # Filter data based on the symbol and exchange
-    return [
-        (datetime.fromisoformat(d['TimeStamp']), d['OrderPrice'])
-        for d in data if d['Symbol'] == symbol and d['Exchange'] == exchange and 'OrderPrice' in d
-    ]
+def parse_data(data):
+    return [(datetime.fromisoformat(d['TimeStamp']), d.get('OrderPrice', 0))
+            for d in data if 'OrderPrice' in d]
+
+def scale_data(data, width, height):
+    timestamps = [d[0] for d in data]
+    prices = [d[1] for d in data]
+    min_time = min(timestamps)
+    max_time = max(timestamps)
+    min_price = min(prices)
+    max_price = max(prices)
+
+    norm_data = [((timestamp - min_time).total_seconds() / (max_time - min_time).total_seconds() * width,
+                  (price - min_price) / (max_price - min_price) * height)
+                 for timestamp, price in data]
+    return norm_data
 
 def draw(data):
-    # This function is responsible for drawing the data
     glBegin(GL_LINES)
-    for i, (timestamp, price) in enumerate(data):
-        x = i * 0.1  # This is a placeholder for actual x-coordinate logic
-        y = price    # This is a placeholder for actual y-coordinate logic
-        glVertex2f(x, y)
+    for i in range(len(data) - 1):
+        glVertex2f(data[i][0], data[i][1])
+        glVertex2f(data[i + 1][0], data[i + 1][1])
     glEnd()
 
 def main():
-    all_datas = parser_script.parse(
-        "./dataset/Exchange_1.json",
-        "./dataset/Exchange_2.json",
-        "./dataset/Exchange_3.json",
-    )
-    
-    for data in all_datas:
-        parsed_data = parse_data(data, '5AV4I', 'Exchange_3')
-        print(parsed_data)
-        
-    # Initialize Pygame and the OpenGL context
+    data = load_data('./dataset/Exchange_3.json')
+    parsed_data = parse_data(data)
+    scaled_data = scale_data(parsed_data, 800, 600)  # Assuming window size 800x600
+
     pygame.init()
     display = (800, 600)
     pygame.display.set_mode(display, DOUBLEBUF|OPENGL)
-    
-    # Set up your OpenGL context here
-    # ...
+    gluOrtho2D(0, 800, 0, 600)
 
-    # Main loop
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
 
-        # Clear the screen, and set up the view
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-        
-        # Call the draw function with your parsed data
-        draw(parsed_data)
-        
-        # Update the display
+        draw(scaled_data)
         pygame.display.flip()
         pygame.time.wait(10)
 
