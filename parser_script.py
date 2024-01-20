@@ -21,11 +21,3 @@ def parse(json_file1, json_file2, json_file3):
         file.close()
 
     return [data1, data2, data3]
-
-
-if __name__ == "__main__":
-    parse(
-        "./dataset/Exchange_1.json",
-        "./dataset/Exchange_2.json",
-        "./dataset/Exchange_3.json",
-    )
