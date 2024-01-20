@@ -32,7 +32,8 @@ def main():
     
     for data in all_datas:
         parsed_data = parse_data(data, '5AV4I', 'Exchange_3')
-    
+        print(parsed_data)
+        
     # Initialize Pygame and the OpenGL context
     pygame.init()
     display = (800, 600)
