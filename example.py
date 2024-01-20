@@ -5,12 +5,17 @@ import random
 
 
 # Sample data (replace this with your actual data)
-def load_data(json_file):
-    with open(json_file, "r") as file:
-        return json.load(file)
+def load_data(json_files):
+    all_data = []
+    for json_file in json_files:
+        with open(json_file, "r") as file:
+            data = json.load(file)
+            all_data.extend(data)
+            file.close()
+    return all_data
 
-
-data = load_data("./dataset/Exchange_1.json")
+json_files = ["./dataset/Exchange_1.json", "./dataset/Exchange_2.json", "./dataset/Exchange_3.json"]
+data = load_data(json_files)
 all_stocks = set()
 
 for message in data:
@@ -49,7 +54,7 @@ for _, row in df.iterrows():
         trees[exchange] = {"symbol": [], "order_price": []}
 
     # Add the order as a leaf to the tree
-    trees[exchange]["symbol"].append(symbol)
+    trees[exchange]["symbol"].append(symbol_to_color[symbol])
     trees[exchange]["order_price"].append(order_price)
 
 # Create a scatter plot for each tree
@@ -61,9 +66,7 @@ for exchange, tree_data in trees.items():
             mode="markers",
             marker=dict(
                 size=10,
-                color=list(
-                    symbol_to_color.values()
-                ),  # Use color to represent different symbols
+                color=tree_data["symbol"],  # Use color to represent different symbols
                 colorscale="Viridis",
                 opacity=0.8,
             ),
