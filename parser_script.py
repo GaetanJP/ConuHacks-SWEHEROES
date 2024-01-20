@@ -20,4 +20,5 @@ def parse(json_file1, json_file2, json_file3):
         data3 = json.load(file)
         file.close()
 
+    print(data1)
     return [data1, data2, data3]
